@@ -1,6 +1,7 @@
 package com.michasoft.stationdistance.di
 
 import com.michasoft.stationdistance.network.StationService
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

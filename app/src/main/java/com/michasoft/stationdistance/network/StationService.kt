@@ -8,10 +8,10 @@ import retrofit2.http.Headers
 
 interface StationService {
     @Headers("X-KOLEO-Version: 1")
-    @GET("/stations")
+    @GET("stations")
     suspend fun getStations(): List<StationDto>
 
     @Headers("X-KOLEO-Version: 1")
-    @GET("/station_keywords")
+    @GET("station_keywords")
     suspend fun getStationKeywords(): List<StationKeywordDto>
 }
