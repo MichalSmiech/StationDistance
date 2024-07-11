@@ -27,9 +27,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -55,10 +59,11 @@ class SearchStationActivity : AppCompatActivity() {
                     onQueryChange = viewModel::changeQuery,
                     searchedItems = state.searchedStations,
                     onSearchedStationClick = {
-                        //TODO
+                        setResult(RESULT_OK, intent.putExtra(RESULT_STATION_ID, it))
+                        finish()
                     },
                     onDismiss = {
-                        //TODO
+                        finish()
                     },
                     onRetry = {
                         viewModel.retry()
@@ -66,6 +71,10 @@ class SearchStationActivity : AppCompatActivity() {
                 )
             }
         }
+    }
+
+    companion object {
+        const val RESULT_STATION_ID = "stationId"
     }
 }
 
@@ -79,12 +88,15 @@ private fun SearchStationScreen(
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
 ) {
+    val focusRequester = remember { FocusRequester() }
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
             TextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(focusRequester),
                 value = query,
                 onValueChange = onQueryChange,
                 placeholder = { Text(text = "Search station") },
@@ -117,6 +129,9 @@ private fun SearchStationScreen(
                 DataState.ERROR -> Error(onRetry)
             }
         }
+    }
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
     }
 }
 

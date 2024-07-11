@@ -31,6 +31,12 @@ class SearchStationViewModel @Inject constructor(
 
     private var searchJob: Job? = null
 
+    init {
+        viewModelScope.launch {
+            searchStations(state.value.query)
+        }
+    }
+
     fun changeQuery(query: String) {
         _state.update {
             it.copy(
