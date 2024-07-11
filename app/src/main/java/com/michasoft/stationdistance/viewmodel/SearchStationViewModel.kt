@@ -37,10 +37,10 @@ class SearchStationViewModel @Inject constructor(
 
     private suspend fun searchStations(query: String) {
         searchJob?.cancelAndJoin()
-        if (query.isEmpty()) {
-            _state.update { it.copy(searchedStations = null) }
-            return
-        }
+//        if (query.isEmpty()) {
+//            _state.update { it.copy(searchedStations = null) }
+//            return
+//        }
         searchJob = viewModelScope.launch {
             val stations = stateRepository.getStations(query)
             _state.update { it.copy(searchedStations = stations) }
