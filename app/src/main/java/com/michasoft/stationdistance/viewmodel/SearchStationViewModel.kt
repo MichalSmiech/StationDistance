@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.michasoft.stationdistance.repository.StationRepository
 import com.michasoft.stationdistance.viewdata.SearchStationViewState
+import com.michasoft.stationdistance.viewdata.SearchStationViewState.DataState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,11 +19,12 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchStationViewModel @Inject constructor(
     private val stateRepository: StationRepository
-): ViewModel() {
+) : ViewModel() {
     private val _state = MutableStateFlow(
         SearchStationViewState(
             query = "",
-            searchedStations = null
+            searchedStations = null,
+            dataState = DataState.LOADING
         )
     )
     val state: StateFlow<SearchStationViewState> = _state.asStateFlow()
@@ -29,7 +32,12 @@ class SearchStationViewModel @Inject constructor(
     private var searchJob: Job? = null
 
     fun changeQuery(query: String) {
-        _state.update { it.copy(query = query) }
+        _state.update {
+            it.copy(
+                query = query,
+                dataState = DataState.LOADING
+            )
+        }
         viewModelScope.launch {
             searchStations(query)
         }
@@ -37,13 +45,31 @@ class SearchStationViewModel @Inject constructor(
 
     private suspend fun searchStations(query: String) {
         searchJob?.cancelAndJoin()
-//        if (query.isEmpty()) {
-//            _state.update { it.copy(searchedStations = null) }
-//            return
-//        }
         searchJob = viewModelScope.launch {
-            val stations = stateRepository.getStations(query)
-            _state.update { it.copy(searchedStations = stations) }
+            runCatching {
+                val stations = stateRepository.getStations(query)
+                _state.update {
+                    it.copy(
+                        searchedStations = stations,
+                        dataState = DataState.LOADED
+                    )
+                }
+            }.onFailure {
+                if (it !is CancellationException) {
+                    _state.update { it.copy(dataState = DataState.ERROR) }
+                }
+            }
+        }
+    }
+
+    fun retry() {
+        _state.update {
+            it.copy(
+                dataState = DataState.LOADING
+            )
+        }
+        viewModelScope.launch {
+            searchStations(state.value.query)
         }
     }
 }

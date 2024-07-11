@@ -54,7 +54,7 @@ class StationRepositoryImpl @Inject constructor(
 
     private suspend fun isCacheTimestampValid(): Boolean {
         val cacheTimestamp = getCacheTimestamp()
-        return cacheTimestamp != null && cacheTimestamp < CACHE_LIFETIME
+        return cacheTimestamp != null && System.currentTimeMillis() - cacheTimestamp < CACHE_LIFETIME
     }
 
     companion object {

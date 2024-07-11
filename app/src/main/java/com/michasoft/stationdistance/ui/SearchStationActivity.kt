@@ -1,22 +1,30 @@
 package com.michasoft.stationdistance.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +36,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.michasoft.stationdistance.model.LatLng
 import com.michasoft.stationdistance.model.Station
 import com.michasoft.stationdistance.ui.theme.AppTheme
+import com.michasoft.stationdistance.viewdata.SearchStationViewState.DataState
 import com.michasoft.stationdistance.viewmodel.SearchStationViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -42,6 +51,7 @@ class SearchStationActivity : AppCompatActivity() {
             AppTheme {
                 SearchStationScreen(
                     query = state.query,
+                    dataState = state.dataState,
                     onQueryChange = viewModel::changeQuery,
                     searchedItems = state.searchedStations,
                     onSearchedStationClick = {
@@ -49,6 +59,9 @@ class SearchStationActivity : AppCompatActivity() {
                     },
                     onDismiss = {
                         //TODO
+                    },
+                    onRetry = {
+                        viewModel.retry()
                     }
                 )
             }
@@ -59,10 +72,12 @@ class SearchStationActivity : AppCompatActivity() {
 @Composable
 private fun SearchStationScreen(
     query: String,
+    dataState: DataState,
     onQueryChange: (String) -> Unit,
     searchedItems: List<Station>?,
     onSearchedStationClick: (Int) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onRetry: () -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -81,20 +96,34 @@ private fun SearchStationScreen(
                     )
                 }
             )
-            if (searchedItems != null) {
-                if (searchedItems.isEmpty()) {
-                    NoResults()
-                } else {
-                    SearchedStationList(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        searchedItems = searchedItems,
-                        onSearchedStationClick = onSearchedStationClick
-                    )
+            when (dataState) {
+                DataState.LOADING -> Loading()
+                DataState.LOADED -> {
+                    if (searchedItems != null) {
+                        if (searchedItems.isEmpty()) {
+                            NoResults()
+                        } else {
+                            SearchedStationList(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxWidth(),
+                                searchedItems = searchedItems,
+                                onSearchedStationClick = onSearchedStationClick
+                            )
+                        }
+                    }
                 }
+
+                DataState.ERROR -> Error(onRetry)
             }
         }
+    }
+}
+
+@Composable
+private fun Loading() {
+    Box(modifier = Modifier.fillMaxSize()) {
+        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
     }
 }
 
@@ -135,6 +164,30 @@ private fun SearchedStationItemView(item: Station, onClick: (Int) -> Unit) {
     }
 }
 
+@Composable
+private fun Error(onRetryClick: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.ErrorOutline, contentDescription = null,
+                tint = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "An error occured"
+            )
+            TextButton(onClick = onRetryClick) {
+                Icon(imageVector = Icons.Outlined.Refresh, contentDescription = null)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = "Refresh")
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun SearchStationScreenPreview() {
@@ -150,10 +203,13 @@ private fun SearchStationScreenPreview() {
                 Station(1, "dasvdsavda", LatLng(1.0, 1.0), 1),
             ),
             onSearchedStationClick = { _ -> },
-            onDismiss = {}
+            onDismiss = {},
+            dataState = DataState.LOADED,
+            onRetry = {}
         )
     }
 }
+
 @Preview
 @Composable
 private fun SearchStationScreenPreviewNoResults() {
@@ -163,7 +219,41 @@ private fun SearchStationScreenPreviewNoResults() {
             onQueryChange = { _ -> },
             searchedItems = listOf(),
             onSearchedStationClick = { _ -> },
-            onDismiss = {}
+            onDismiss = {},
+            dataState = DataState.LOADED,
+            onRetry = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun SearchStationScreenPreviewLoading() {
+    AppTheme {
+        SearchStationScreen(
+            "abcd",
+            onQueryChange = { _ -> },
+            searchedItems = listOf(),
+            onSearchedStationClick = { _ -> },
+            onDismiss = {},
+            dataState = DataState.LOADING,
+            onRetry = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun SearchStationScreenPreviewError() {
+    AppTheme {
+        SearchStationScreen(
+            "abcd",
+            onQueryChange = { _ -> },
+            searchedItems = listOf(),
+            onSearchedStationClick = { _ -> },
+            onDismiss = {},
+            dataState = DataState.ERROR,
+            onRetry = {}
         )
     }
 }
