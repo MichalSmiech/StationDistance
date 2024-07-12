@@ -47,7 +47,7 @@ class StationRepositoryImpl @Inject constructor(
             stationRemoteDataSource.getStationKeywords().getOrElse { return it.asFailure() }
                 .let { normalizeStationKeywordsUseCase.normalizeStationKeywords(it) }
         stationLocalDataSource.insertStationsAndStationKeywords(stations, stationKeywords)
-        saveCacheTimestamp()
+        saveCacheTimestamp(System.currentTimeMillis())
         return Unit.asSuccess()
     }
 
@@ -59,8 +59,8 @@ class StationRepositoryImpl @Inject constructor(
         return Unit.asSuccess()
     }
 
-    private suspend fun saveCacheTimestamp() {
-        dataSource.edit { it[cacheTimestampKey] = System.currentTimeMillis() }
+    private suspend fun saveCacheTimestamp(millis: Long) {
+        dataSource.edit { it[cacheTimestampKey] = millis }
     }
 
     private suspend fun clearStationData() {
