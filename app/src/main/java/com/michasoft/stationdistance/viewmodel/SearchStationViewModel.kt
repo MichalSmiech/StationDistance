@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchStationViewModel @Inject constructor(
-    private val stateRepository: StationRepository
+    private val stationRepository: StationRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow(
         SearchStationViewState(
@@ -53,7 +53,7 @@ class SearchStationViewModel @Inject constructor(
         searchJob?.cancelAndJoin()
         searchJob = viewModelScope.launch {
             runCatching {
-                val stations = stateRepository.getStations(query)
+                val stations = stationRepository.getStations(query)
                 _state.update {
                     it.copy(
                         searchedStations = stations,

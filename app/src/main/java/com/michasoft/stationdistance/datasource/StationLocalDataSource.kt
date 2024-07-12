@@ -17,6 +17,8 @@ interface StationLocalDataSource {
     suspend fun getStations(query: String): List<Station>
 
     suspend fun clear()
+
+    suspend fun getStation(stationId: Int): Station?
 }
 
 class StationLocalDataSourceImpl @Inject constructor(
@@ -48,6 +50,10 @@ class StationLocalDataSourceImpl @Inject constructor(
             appDatabase.stationDao.clearStation()
             appDatabase.stationDao.clearStationKeywords()
         }
+    }
+
+    override suspend fun getStation(stationId: Int): Station? {
+        return appDatabase.stationDao.getStation(stationId)?.toModel()
     }
 
 }

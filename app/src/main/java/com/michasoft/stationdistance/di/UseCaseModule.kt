@@ -1,5 +1,7 @@
 package com.michasoft.stationdistance.di
 
+import com.michasoft.stationdistance.usecase.CalculateStationDistanceUseCase
+import com.michasoft.stationdistance.usecase.CalculateStationDistanceUseCaseImpl
 import com.michasoft.stationdistance.usecase.NormalizeStationKeywordsUseCase
 import com.michasoft.stationdistance.usecase.NormalizeStationKeywordsUseCaseImpl
 import dagger.Binds
@@ -14,4 +16,8 @@ interface UseCaseModule {
     @Singleton
     @Binds
     fun bindNormalizeStationKeywordsUseCase(impl: NormalizeStationKeywordsUseCaseImpl): NormalizeStationKeywordsUseCase
+
+    @Singleton
+    @Binds
+    fun bindCalculateStationDistanceUseCase(impl: CalculateStationDistanceUseCaseImpl): CalculateStationDistanceUseCase
 }

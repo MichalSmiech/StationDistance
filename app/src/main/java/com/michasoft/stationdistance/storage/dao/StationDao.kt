@@ -33,4 +33,7 @@ interface StationDao {
 
     @Query("DELETE FROM ${StationKeywordEntity.TABLE_NAME}")
     suspend fun clearStationKeywords()
+
+    @Query("SELECT * FROM ${StationEntity.TABLE_NAME} WHERE id = :stationId")
+    suspend fun getStation(stationId: Int): StationEntity?
 }

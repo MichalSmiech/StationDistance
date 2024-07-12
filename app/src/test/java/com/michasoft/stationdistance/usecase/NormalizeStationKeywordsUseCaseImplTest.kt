@@ -9,13 +9,13 @@ class NormalizeStationKeywordsUseCaseImplTest {
     @Test
     fun normalizeStationKeywordsWithDiacritics() = runBlocking {
         val stationKeywords = listOf<StationKeyword>(
-            StationKeyword(1, "ążć", stationId = 1)
+            StationKeyword(1, "ążćł", stationId = 1)
         )
         val usecase = NormalizeStationKeywordsUseCaseImpl()
 
         val normalizeStationKeywords = usecase.normalizeStationKeywords(stationKeywords)
 
-        assertEquals("azc", normalizeStationKeywords.first().keyword)
+        assertEquals("azcl", normalizeStationKeywords.first().keyword)
     }
 
     @Test
@@ -33,12 +33,12 @@ class NormalizeStationKeywordsUseCaseImplTest {
     @Test
     fun normalizeStationKeywordsWithMix() = runBlocking {
         val stationKeywords = listOf<StationKeyword>(
-            StationKeyword(1, "aącć", stationId = 1)
+            StationKeyword(1, "aącćł", stationId = 1)
         )
         val usecase = NormalizeStationKeywordsUseCaseImpl()
 
         val normalizeStationKeywords = usecase.normalizeStationKeywords(stationKeywords)
 
-        assertEquals("aacc", normalizeStationKeywords.first().keyword)
+        assertEquals("aaccl", normalizeStationKeywords.first().keyword)
     }
 }

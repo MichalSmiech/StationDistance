@@ -15,6 +15,8 @@ import javax.inject.Inject
 
 interface StationRepository {
     suspend fun getStations(query: String): List<Station>
+
+    suspend fun getStation(stationId: Int): Station?
 }
 
 class StationRepositoryImpl @Inject constructor(
@@ -29,6 +31,14 @@ class StationRepositoryImpl @Inject constructor(
             cacheStationData()
         }
         return stationLocalDataSource.getStations(query.normalize())
+    }
+
+    override suspend fun getStation(stationId: Int): Station? {
+        if (!isCacheTimestampValid()) {
+            clearStationData()
+            cacheStationData()
+        }
+        return stationLocalDataSource.getStation(stationId)
     }
 
     private suspend fun cacheStationData() {
