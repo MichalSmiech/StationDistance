@@ -7,16 +7,22 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import com.michasoft.stationdistance.datasource.StationLocalDataSource
 import com.michasoft.stationdistance.datasource.StationRemoteDataSource
 import com.michasoft.stationdistance.model.Station
+import com.michasoft.stationdistance.network.NetworkError
 import com.michasoft.stationdistance.usecase.NormalizeStationKeywordsUseCase
+import com.michasoft.stationdistance.util.Either
+import com.michasoft.stationdistance.util.asFailure
+import com.michasoft.stationdistance.util.asSuccess
+import com.michasoft.stationdistance.util.getOrElse
 import com.michasoft.stationdistance.util.normalize
+import com.michasoft.stationdistance.util.onFailure
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 interface StationRepository {
-    suspend fun getStations(query: String): List<Station>
+    suspend fun getStations(query: String): Either<List<Station>, NetworkError>
 
-    suspend fun getStation(stationId: Int): Station?
+    suspend fun getStation(stationId: Int): Either<Station?, NetworkError>
 }
 
 class StationRepositoryImpl @Inject constructor(
@@ -24,30 +30,33 @@ class StationRepositoryImpl @Inject constructor(
     private val stationLocalDataSource: StationLocalDataSource,
     private val dataSource: DataStore<Preferences>,
     private val normalizeStationKeywordsUseCase: NormalizeStationKeywordsUseCase
-): StationRepository {
-    override suspend fun getStations(query: String): List<Station> {
-        if (!isCacheTimestampValid()) {
-            clearStationData()
-            cacheStationData()
-        }
-        return stationLocalDataSource.getStations(query.normalize())
+) : StationRepository {
+    override suspend fun getStations(query: String): Either<List<Station>, NetworkError> {
+        checkStationData().onFailure { return it.asFailure() }
+        return stationLocalDataSource.getStations(query.normalize()).asSuccess()
     }
 
-    override suspend fun getStation(stationId: Int): Station? {
-        if (!isCacheTimestampValid()) {
-            clearStationData()
-            cacheStationData()
-        }
-        return stationLocalDataSource.getStation(stationId)
+    override suspend fun getStation(stationId: Int): Either<Station?, NetworkError> {
+        checkStationData().onFailure { return it.asFailure() }
+        return stationLocalDataSource.getStation(stationId).asSuccess()
     }
 
-    private suspend fun cacheStationData() {
-        val stations = stationRemoteDataSource.getStations()
-        val stationKeywords = stationRemoteDataSource.getStationKeywords().let {
-            normalizeStationKeywordsUseCase.normalizeStationKeywords(it)
-        }
+    private suspend fun cacheStationData(): Either<Unit, NetworkError> {
+        val stations = stationRemoteDataSource.getStations().getOrElse { return it.asFailure() }
+        val stationKeywords =
+            stationRemoteDataSource.getStationKeywords().getOrElse { return it.asFailure() }
+                .let { normalizeStationKeywordsUseCase.normalizeStationKeywords(it) }
         stationLocalDataSource.insertStationsAndStationKeywords(stations, stationKeywords)
         saveCacheTimestamp()
+        return Unit.asSuccess()
+    }
+
+    private suspend fun checkStationData(): Either<Unit, NetworkError> {
+        if (!isCacheTimestampValid()) {
+            clearStationData()
+            cacheStationData().onFailure { return it.asFailure() }
+        }
+        return Unit.asSuccess()
     }
 
     private suspend fun saveCacheTimestamp() {

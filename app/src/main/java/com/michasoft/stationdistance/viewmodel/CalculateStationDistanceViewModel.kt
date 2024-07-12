@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.michasoft.stationdistance.repository.StationRepository
 import com.michasoft.stationdistance.usecase.CalculateStationDistanceUseCase
+import com.michasoft.stationdistance.util.getOrElse
 import com.michasoft.stationdistance.viewdata.CalculateStationDistanceViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +30,7 @@ class CalculateStationDistanceViewModel @Inject constructor(
 
     fun setStartStation(stationId: Int) {
         viewModelScope.launch {
-            val station = stationRepository.getStation(stationId) ?: return@launch
+            val station = stationRepository.getStation(stationId).getOrElse { return@launch }
             _state.update {
                 it.copy(startStation = station)
                     .setStationDistance()
@@ -39,7 +40,7 @@ class CalculateStationDistanceViewModel @Inject constructor(
 
     fun setEndStation(stationId: Int) {
         viewModelScope.launch {
-            val station = stationRepository.getStation(stationId) ?: return@launch
+            val station = stationRepository.getStation(stationId).getOrElse { return@launch }
             _state.update {
                 it.copy(endStation = station)
                     .setStationDistance()

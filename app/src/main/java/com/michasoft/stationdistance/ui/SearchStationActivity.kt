@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -41,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.michasoft.stationdistance.R
 import com.michasoft.stationdistance.model.LatLng
 import com.michasoft.stationdistance.model.Station
+import com.michasoft.stationdistance.network.NetworkError
 import com.michasoft.stationdistance.ui.theme.AppTheme
 import com.michasoft.stationdistance.viewdata.SearchStationViewState.DataState
 import com.michasoft.stationdistance.viewmodel.SearchStationViewModel
@@ -111,8 +113,8 @@ private fun SearchStationScreen(
                 }
             )
             when (dataState) {
-                DataState.LOADING -> Loading()
-                DataState.LOADED -> {
+                DataState.Loading -> Loading()
+                DataState.Loaded -> {
                     if (searchedItems != null) {
                         if (searchedItems.isEmpty()) {
                             NoResults()
@@ -128,7 +130,12 @@ private fun SearchStationScreen(
                     }
                 }
 
-                DataState.ERROR -> Error(onRetry)
+                is DataState.Error -> {
+                    when (dataState.value) {
+                        NetworkError.NoNetwork -> NoNetworkError(onRetry)
+                        NetworkError.Other -> OtherError(onRetry)
+                    }
+                }
             }
         }
     }
@@ -182,7 +189,31 @@ private fun SearchedStationItemView(item: Station, onClick: (Int) -> Unit) {
 }
 
 @Composable
-private fun Error(onRetryClick: () -> Unit) {
+private fun NoNetworkError(onRetryClick: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.WifiOff, contentDescription = null,
+                tint = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.search_station_no_network_error)
+            )
+            TextButton(onClick = onRetryClick) {
+                Icon(imageVector = Icons.Outlined.Refresh, contentDescription = null)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(text = stringResource(R.string.action_refresh))
+            }
+        }
+    }
+}
+
+@Composable
+private fun OtherError(onRetryClick: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.align(Alignment.Center),
@@ -194,7 +225,7 @@ private fun Error(onRetryClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(R.string.search_station_error)
+                text = stringResource(R.string.search_station_other_error)
             )
             TextButton(onClick = onRetryClick) {
                 Icon(imageVector = Icons.Outlined.Refresh, contentDescription = null)
@@ -221,7 +252,7 @@ private fun SearchStationScreenPreview() {
             ),
             onSearchedStationClick = { _ -> },
             onDismiss = {},
-            dataState = DataState.LOADED,
+            dataState = DataState.Loaded,
             onRetry = {}
         )
     }
@@ -237,7 +268,7 @@ private fun SearchStationScreenPreviewNoResults() {
             searchedItems = listOf(),
             onSearchedStationClick = { _ -> },
             onDismiss = {},
-            dataState = DataState.LOADED,
+            dataState = DataState.Loaded,
             onRetry = {}
         )
     }
@@ -253,7 +284,7 @@ private fun SearchStationScreenPreviewLoading() {
             searchedItems = listOf(),
             onSearchedStationClick = { _ -> },
             onDismiss = {},
-            dataState = DataState.LOADING,
+            dataState = DataState.Loading,
             onRetry = {}
         )
     }
@@ -269,7 +300,7 @@ private fun SearchStationScreenPreviewError() {
             searchedItems = listOf(),
             onSearchedStationClick = { _ -> },
             onDismiss = {},
-            dataState = DataState.ERROR,
+            dataState = DataState.Error(NetworkError.Other),
             onRetry = {}
         )
     }

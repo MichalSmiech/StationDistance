@@ -2,7 +2,8 @@
     <string name="app_name">StationDistance</string>
     <string name="search_station_search_field_placeholder">Search station</string>
     <string name="search_station_no_results">No results</string>
-    <string name="search_station_error">An error occurred</string>
+    <string name="search_station_no_network_error">No network connection</string>
+    <string name="search_station_other_error">An error occurred</string>
     <string name="action_refresh">Refresh</string>
     <string name="calculate_station_distance_title">Calculate distance between stations</string>
     <string name="calculate_station_distance_start_station">Start station</string>

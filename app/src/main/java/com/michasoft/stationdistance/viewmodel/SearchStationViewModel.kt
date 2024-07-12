@@ -2,7 +2,9 @@ package com.michasoft.stationdistance.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.michasoft.stationdistance.network.NetworkError
 import com.michasoft.stationdistance.repository.StationRepository
+import com.michasoft.stationdistance.util.getOrElse
 import com.michasoft.stationdistance.viewdata.SearchStationViewState
 import com.michasoft.stationdistance.viewdata.SearchStationViewState.DataState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +26,7 @@ class SearchStationViewModel @Inject constructor(
         SearchStationViewState(
             query = "",
             searchedStations = null,
-            dataState = DataState.LOADING
+            dataState = DataState.Loading
         )
     )
     val state: StateFlow<SearchStationViewState> = _state.asStateFlow()
@@ -41,7 +43,7 @@ class SearchStationViewModel @Inject constructor(
         _state.update {
             it.copy(
                 query = query,
-                dataState = DataState.LOADING
+                dataState = DataState.Loading
             )
         }
         viewModelScope.launch {
@@ -53,16 +55,19 @@ class SearchStationViewModel @Inject constructor(
         searchJob?.cancelAndJoin()
         searchJob = viewModelScope.launch {
             runCatching {
-                val stations = stationRepository.getStations(query)
+                val stations = stationRepository.getStations(query).getOrElse { networkError ->
+                    _state.update { it.copy(dataState = DataState.Error(networkError)) }
+                    return@runCatching
+                }
                 _state.update {
                     it.copy(
                         searchedStations = stations,
-                        dataState = DataState.LOADED
+                        dataState = DataState.Loaded
                     )
                 }
             }.onFailure {
                 if (it !is CancellationException) {
-                    _state.update { it.copy(dataState = DataState.ERROR) }
+                    _state.update { it.copy(dataState = DataState.Error(NetworkError.Other)) }
                 }
             }
         }
@@ -71,7 +76,7 @@ class SearchStationViewModel @Inject constructor(
     fun retry() {
         _state.update {
             it.copy(
-                dataState = DataState.LOADING
+                dataState = DataState.Loading
             )
         }
         viewModelScope.launch {
