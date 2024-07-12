@@ -2,7 +2,6 @@ package com.michasoft.stationdistance.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
@@ -33,8 +32,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.michasoft.stationdistance.R
-import com.michasoft.stationdistance.ui.SearchStationContract.Companion.MODE_END_STATION
-import com.michasoft.stationdistance.ui.SearchStationContract.Companion.MODE_START_STATION
 import com.michasoft.stationdistance.ui.theme.AppTheme
 import com.michasoft.stationdistance.viewmodel.CalculateStationDistanceViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,28 +43,21 @@ class CalculateStationDistanceActivity : ComponentActivity() {
         setContent {
             val viewModel by viewModels<CalculateStationDistanceViewModel>()
             val state by viewModel.state.collectAsStateWithLifecycle()
-            val searchStationLauncher =
-                rememberLauncherForActivityResult(SearchStationContract()) { result ->
-                    if (result == null) {
-                        return@rememberLauncherForActivityResult
-                    }
-                    when (result.mode) {
-                        MODE_START_STATION -> {
-                            viewModel.setStartStation(result.stationId)
-                        }
-
-                        MODE_END_STATION -> {
-                            viewModel.setEndStation(result.stationId)
-                        }
-                    }
+            val searchStationLauncher = rememberSearchStationLauncher(
+                onStartStationPick = { stationId ->
+                    viewModel.setStartStation(stationId)
+                },
+                onEndStationPick = { stationId ->
+                    viewModel.setEndStation(stationId)
                 }
+            )
             AppTheme {
                 CalculateStationDistanceScreen(
                     startStationName = state.startStation?.name,
                     endStationName = state.endStation?.name,
                     stationDistance = state.stationDistance,
-                    onStartStationClick = { searchStationLauncher.launch(MODE_START_STATION) },
-                    onEndStationClick = { searchStationLauncher.launch(MODE_END_STATION) }
+                    onStartStationClick = { searchStationLauncher.pickStartStation() },
+                    onEndStationClick = { searchStationLauncher.pickEndStation() }
                 )
             }
         }
