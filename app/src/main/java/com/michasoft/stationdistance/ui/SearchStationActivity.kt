@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -34,9 +34,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.michasoft.stationdistance.R
 import com.michasoft.stationdistance.model.LatLng
 import com.michasoft.stationdistance.model.Station
 import com.michasoft.stationdistance.ui.theme.AppTheme
@@ -99,11 +101,11 @@ private fun SearchStationScreen(
                     .focusRequester(focusRequester),
                 value = query,
                 onValueChange = onQueryChange,
-                placeholder = { Text(text = "Search station") },
+                placeholder = { Text(text = stringResource(R.string.search_station_search_field_placeholder)) },
                 leadingIcon = {
                     Icon(
                         modifier = Modifier.clickable { onDismiss() },
-                        imageVector = Icons.Outlined.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = null
                     )
                 }
@@ -147,7 +149,7 @@ private fun NoResults() {
     Box(modifier = Modifier.fillMaxSize()) {
         Text(
             modifier = Modifier.align(Alignment.Center),
-            text = "No results"
+            text = stringResource(R.string.search_station_no_results)
         )
     }
 }
@@ -192,12 +194,12 @@ private fun Error(onRetryClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "An error occured"
+                text = stringResource(R.string.search_station_error)
             )
             TextButton(onClick = onRetryClick) {
                 Icon(imageVector = Icons.Outlined.Refresh, contentDescription = null)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "Refresh")
+                Text(text = stringResource(R.string.action_refresh))
             }
         }
     }
