@@ -56,15 +56,4 @@ class CalculateStationDistanceViewModel @Inject constructor(
         }
         return copy(stationDistance = distance)
     }
-
-    private fun refreshStationDistance() {
-        val startStation = state.value.startStation
-        val endStation = state.value.endStation
-        val distance = if (startStation != null && endStation != null) {
-            calculateStationDistanceUseCase.calculateStationDistance(startStation, endStation)
-        } else {
-            null
-        }
-        _state.update { it.copy(stationDistance = distance) }
-    }
 }

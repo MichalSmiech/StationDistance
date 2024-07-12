@@ -77,7 +77,7 @@ class StationRepositoryImpl @Inject constructor(
     }
 
     companion object {
-        private val cacheTimestampKey = longPreferencesKey("cacheInfo")
+        private val cacheTimestampKey = longPreferencesKey("cacheTimestamp")
         private const val CACHE_LIFETIME = 24 * 60 * 60 * 1000 // 24h
     }
 }
