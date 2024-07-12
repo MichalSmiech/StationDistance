@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -196,8 +197,8 @@ private fun NoNetworkError(onRetryClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
+                modifier = Modifier.size(48.dp),
                 imageVector = Icons.Default.WifiOff, contentDescription = null,
-                tint = MaterialTheme.colorScheme.error
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -220,6 +221,7 @@ private fun OtherError(onRetryClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
+                modifier = Modifier.size(48.dp),
                 imageVector = Icons.Default.ErrorOutline, contentDescription = null,
                 tint = MaterialTheme.colorScheme.error
             )
@@ -292,7 +294,23 @@ private fun SearchStationScreenPreviewLoading() {
 
 @Preview
 @Composable
-private fun SearchStationScreenPreviewError() {
+private fun SearchStationScreenPreviewNoNetworkError() {
+    AppTheme {
+        SearchStationScreen(
+            "abcd",
+            onQueryChange = { _ -> },
+            searchedItems = listOf(),
+            onSearchedStationClick = { _ -> },
+            onDismiss = {},
+            dataState = DataState.Error(NetworkError.NoNetwork),
+            onRetry = {}
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun SearchStationScreenPreviewOtherError() {
     AppTheme {
         SearchStationScreen(
             "abcd",
