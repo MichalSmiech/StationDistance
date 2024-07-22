@@ -13,7 +13,7 @@ sealed interface Either<out Success, out Failure> {
 }
 
 @OptIn(ExperimentalContracts::class)
-public inline fun <Success, Failure> Either<Success, Failure>.getOrElse(onFailure: (failure: Failure) -> Success): Success {
+inline fun <Success, Failure> Either<Success, Failure>.getOrElse(onFailure: (failure: Failure) -> Success): Success {
     contract {
         callsInPlace(onFailure, InvocationKind.AT_MOST_ONCE)
     }

@@ -21,7 +21,7 @@ interface StationDao {
     suspend fun getStations(): List<StationEntity>
 
     @Query(
-        "SELECT station.* FROM ${StationEntity.TABLE_NAME} station " +
+        "SELECT DISTINCT station.* FROM ${StationEntity.TABLE_NAME} station " +
                 "JOIN ${StationKeywordEntity.TABLE_NAME} keyword ON station.id = keyword.stationId " +
                 "WHERE keyword.keyword LIKE :query " +
                 "ORDER BY station.hits DESC"

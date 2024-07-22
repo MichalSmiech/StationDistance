@@ -17,8 +17,6 @@ class StationKeywordEntity(
         station.stationId,
     )
 
-    fun toModel() = StationKeyword(id, keyword, stationId)
-
     companion object {
         const val TABLE_NAME = "StationKeywords"
     }
